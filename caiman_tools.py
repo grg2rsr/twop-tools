@@ -1,3 +1,8 @@
+"""
+this file:
+tools for inspecting caiman output
+"""
+
 import sys, os
 from copy import copy
 from pathlib import Path
@@ -180,3 +185,48 @@ def plot_footprints_eval(Fs, good_inds, save=None):
 
     return axes
 
+
+def time_slice(D, tvec, t_start, t_stop, return_ix=False):
+    """ tvec is time of samples of D """
+
+    ix = np.where(np.logical_and(tvec > t_start, tvec < t_stop))[0]
+    if return_ix:
+        return D[ix], tvec[ix], ix
+    else:
+        return D[ix], tvec[ix]
+
+def cut_to_min(Ds, dim):
+    """ Ds is list of arrays, """
+
+    shapes = [d.shape[dim] for d in Ds]
+    if shapes.max() - shapes.min() > 1: # one sample difference can occur bc of slicing (=aliasing?)
+        print('WARNING: Data slices vary in length. Largest and smallest slice: (%s / %s )' % (shapes.min(),shapes.max()))
+
+    min_len = np.min([d.shape[dim] for d in Ds])
+    Dsc = []
+    for i,d in enumerate(Ds):
+        Dsc.append(d[:min_len])
+    return Dsc
+
+def times_slice(D, tvec, times, pre, post, return_type='array'):
+    """ helper : slices all traces D  with tvec at times,
+    returns Dsc: time x cells x trials (= new slice) """
+
+    Ds = [time_slice(D, tvec, t+pre, t+post) for t in times]
+
+    if return_type == 'list':
+        Ds, tvecs_true = list(zip(*Ds))
+        return Ds, tvecs_true
+
+    if return_type == 'array':
+        
+        Dsc = cut_to_min(Ds, 0)
+        Dsc = np.stack(Dsc, axis=2)
+
+        n_frames = Dsc.shape[0]
+
+        # relative tvec
+        dt = np.median(np.diff(tvec))
+        tvec_rel = np.arange(pre, post, dt)[:n_frames]
+
+        return Dsc, tvec_rel

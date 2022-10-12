@@ -1,3 +1,8 @@
+"""
+this file: everything related to the caimain pipeline,
+setup, running, storage etc
+"""
+
 import sys, os
 import json
 import pickle
@@ -23,7 +28,7 @@ logging.basicConfig(format=
                     "[%(process)d] %(message)s",
                     level=logging.INFO)
 
-os.chdir("/home/georg/code/twoplib") # local hack - to be removed
+#os.chdir("/home/georg/code/twoplib") # local hack - to be removed
 import twoplib
 
 """
@@ -122,6 +127,7 @@ def setup_caiman_params(opts, fnames, meta, meta_si, mROI_ix=None):
     # MOCO
     max_shift_um = (24., 24.)       # maximum shift in um
     patch_motion_um = (100., 100.)  # patch size for non-rigid correction in um
+    # patch_motion_um = (100., 100.)  # patch size for non-rigid correction in um
     pw_rigid = True       # flag to select rigid vs pw_rigid motion correction
     max_shifts = [int(a/b) for a, b in zip(max_shift_um, dxy)] # maximum allowed rigid shift in pixels
     strides = tuple([int(a/b) for a, b in zip(patch_motion_um, dxy)]) # start a new patch for pw-rigid motion correction every x pixels
